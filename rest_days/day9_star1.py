@@ -1,4 +1,4 @@
-from lib import read_lines_from_input
+from lib import read_lines_from_input, parse_str_ints_from_lines
 
 EXAMPLE_MOVES = """R 4
 U 4
@@ -9,12 +9,6 @@ D 1
 L 5
 R 2
 """
-def parse_str_ints_from_lines(lines: list[str]) -> list[tuple[str, int]]:
-    """
-    >>> parse_str_ints_from_lines(['1 2', '3 4'])
-    [('1', 2), ('3', 4)]
-    """
-    return [(a, int(b)) for (a, b) in [tuple(line.strip().split()) for line in lines]]
 
 def get_next_step_head_position(head: tuple[int, int], direction: str) -> tuple[int, int]:
     """
@@ -40,6 +34,11 @@ def get_next_step_head_position(head: tuple[int, int], direction: str) -> tuple[
         raise ValueError(f"Invalid direction: {direction}")
 
 
+def sign(x: int) -> int:
+    if x == 0:
+        return 0
+    return 1 if x > 0 else -1
+
 def get_next_step_tail_position(head: tuple[int, int], tail: tuple[int, int]) -> tuple[int, int]:
     """
     >>> get_next_step_tail_position((0, 0), (0, 0))
@@ -60,6 +59,21 @@ def get_next_step_tail_position(head: tuple[int, int], tail: tuple[int, int]) ->
     (0, 1)
     >>> get_next_step_tail_position((1, 1), (1, 1))
     (1, 1)
+
+    >>> get_next_step_tail_position((0, 2), (0, 0))
+    (0, 1)
+    >>> get_next_step_tail_position((0, 0), (0, 2))
+    (0, 1)
+    >>> get_next_step_tail_position((0, 0), (2, 0))
+    (1, 0)
+    >>> get_next_step_tail_position((0, 0), (2, 0))
+    (1, 0)
+
+    >>> get_next_step_tail_position((1, 1), (0, -1))
+    (1, 0)
+    >>> get_next_step_tail_position((3, 2), (1, 1))
+    (2, 2)
+
     """
     hx, hy = head
     tx, ty = tail
@@ -72,17 +86,15 @@ def get_next_step_tail_position(head: tuple[int, int], tail: tuple[int, int]) ->
 
     if adx == 2:
         incx = dx // 2
-        newx = tx + incx
-        newy = hy
-        return newx, newy
+        incy = sign(dy)
     elif ady == 2:
         incy = dy // 2
-        newx = hx
-        newy = ty + incy
-        return newx, newy
+        incx = sign(dx)
     else:
         raise ValueError(f"Invalid head and tail positions: {head}, {tail}")
-
+    newx = tx + incx
+    newy = ty + incy
+    return newx, newy
 
 class Rope:
     head: tuple[int, int]
