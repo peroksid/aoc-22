@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
 from day11_star1 import count_monkey_business, Monkey, EXAMPLE_LINES
-from gmpy2 import mpz, add, is_divisible, mul
 from lib import read_lines_from_input
-from functools import cache
 
 ROUNDS = 10000
 
@@ -16,8 +14,7 @@ def main():
 
 @dataclass
 class Item:
-    #__slots__ = ("value", "monkey_id")
-    value: mpz
+    value: int
     monkey_id: int
     reminders_for_dividers: dict[int, int] = field(default_factory=dict)
 
@@ -36,7 +33,6 @@ class Item:
 
 @dataclass
 class SkeletonMonkey(Monkey):
-    #__slots__ = ("operation", "test_divider", "on_zero", "on_else", "callable_op", "throw_count")
     callable_op: callable = None
     
     def get_worry_level(self, item: Item) -> int:
@@ -55,8 +51,7 @@ class SkeletonMonkey(Monkey):
         monkeys = super(SkeletonMonkey, cls).generate_monkey_world(description_lines)
         solid_items = []
         for monkey_id, items in enumerate(monkeys[0].monkey_items):
-            for item in items:
-                solid_items.append(Item(mpz(item), monkey_id))
+            solid_items.extend(Item(item, monkey_id) for item in items)
         dividers = []
         for monkey in monkeys:
             if monkey.test_divider not in dividers:
@@ -65,24 +60,7 @@ class SkeletonMonkey(Monkey):
         for item in solid_items:
             item.prepare_for_dividers(dividers)
         for monkey in monkeys:
-            monkey.monkey_items = solid_items
-        # for item in solid_items:
-        #     item.prepare_for_dividers(dividers)
-        #     # if monkey.operation == "old * old":
-        #     #     monkey.callable_op = lambda old: mul(old, old)
-        #     # elif monkey.operation.startswith("old *"):
-        #     #     xxx = mpz(monkey.operation.split("old * ")[1])
-        #     #     monkey.callable_op = lambda old: add(old, xxx)
-        #     # elif monkey.operation == "old + old":
-        #     #     monkey.callable_op = lambda old: add(old, old)
-        #     # elif monkey.operation.startswith("old +"):
-        #     #     xxx = mpz(monkey.operation.split("old + ")[1])
-        #     #     monkey.callable_op = lambda old: add(old, xxx)
-        #     # else:
-        #     #     raise ValueError(f"Unknown operation: {monkey.operation}")
-        #     #monkey.callable_op = cache(monkey.callable_op)
-        #     #monkey.callable_op = cache(eval(f"lambda old: {monkey.operation}"))
-            
+            monkey.monkey_items = solid_items            
         return monkeys
 
 
